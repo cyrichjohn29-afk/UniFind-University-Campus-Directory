@@ -2,60 +2,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>UniFind</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UniPlanner</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#f3f6fb;color:#26334c}
-header{background:#167e78;color:white;padding:25px}
-main{max-width:850px;margin:30px auto;padding:18px}
-.card{background:white;padding:22px;border-radius:15px;margin-bottom:18px}
-input,select,button{padding:12px;border:1px solid #ddd;border-radius:8px;margin:5px 0}
-input,select{width:100%}button{background:#167e78;color:white;border:0;cursor:pointer}
-.item{padding:15px;border-bottom:1px solid #eee}
-.item button{margin-right:5px}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#f3f5fb;color:#26334c}
+header{background:#4568dc;color:white;padding:25px}
+main{max-width:850px;margin:30px auto;padding:20px}
+.card{background:white;padding:22px;border-radius:16px;margin-bottom:18px;box-shadow:0 5px 20px #17233c10}
+input,button{padding:12px;border-radius:9px;border:1px solid #ddd}
+input{width:100%;margin:6px 0}
+button{background:#4568dc;color:white;border:0;cursor:pointer}
+.task{display:flex;align-items:center;gap:10px;padding:13px;border-bottom:1px solid #eee}
+.task span{flex:1}
+.done{text-decoration:line-through;color:#999}
+.actions{display:flex;gap:5px}
+.actions button{padding:8px}
 </style>
 </head>
 <body>
-<header><h1>🔎 UniFind</h1><p>Lost something? Find it here!</p></header>
+<header><h1>📚 UniPlanner</h1><p>Your everyday university organizer</p></header>
 <main>
 <div class="card">
-<h2>Report an Item</h2>
-<input id="name" placeholder="Item name">
-<select id="status"><option>Lost</option><option>Found</option></select>
-<input id="place" placeholder="Location">
-<input id="contact" placeholder="Contact information">
-<button onclick="add()">Post Item</button>
+<h2>Add a task</h2>
+<input id="task" placeholder="Task name">
+<input id="date" type="date">
+<button onclick="addTask()">+ Add Task</button>
 </div>
 <div class="card">
-<h2>Campus Reports</h2>
-<input id="search" placeholder="Search items..." oninput="render()">
-<div id="list"></div>
+<h2>My Tasks</h2>
+<div id="tasks"></div>
 </div>
 </main>
 <script>
-let data=JSON.parse(localStorage.unifind||'[]');
-function save(){localStorage.unifind=JSON.stringify(data);render()}
-function add(){
-let n=name.value.trim(),p=place.value.trim(),c=contact.value.trim();
-if(!n||!p||!c)return alert('Complete all fields');
-data.unshift({n,s:status.value,p,c});
-name.value=place.value=contact.value='';
+let tasks=JSON.parse(localStorage.tasks||"[]");
+function save(){localStorage.tasks=JSON.stringify(tasks);render()}
+function addTask(){
+let name=document.getElementById('task').value.trim();
+if(!name)return alert('Enter a task!');
+tasks.push({name,date:document.getElementById('date').value,done:false});
+document.getElementById('task').value='';
 save();
 }
-function edit(i){
-let n=prompt('Item name',data[i].n);
-if(n&&n.trim()){data[i].n=n.trim();save()}
+function editTask(i){
+let n=prompt('Edit task:',tasks[i].name);
+if(n&&n.trim()){tasks[i].name=n.trim();save()}
 }
-function del(i){if(confirm('Delete report?')){data.splice(i,1);save()}}
+function removeTask(i){
+if(confirm('Delete this task?')){tasks.splice(i,1);save()}
+}
 function render(){
-let q=search.value.toLowerCase();
-list.innerHTML=data.map((x,i)=>({...x,i})).filter(x=>(x.n+x.p+x.s).toLowerCase().includes(q)).map(x=>`
-<div class="item"><b>${esc(x.n)}</b> <b>(${esc(x.s)})</b>
-<p>📍 ${esc(x.p)} | ☎ ${esc(x.c)}</p>
-<button onclick="edit(${x.i})">Edit</button>
-<button onclick="del(${x.i})">Delete</button></div>`).join('')||'No reports found.';
+document.getElementById('tasks').innerHTML=tasks.map((t,i)=>`
+<div class="task">
+<input type="checkbox" style="width:auto" ${t.done?'checked':''} onchange="tasks[${i}].done=this.checked;save()">
+<span class="${t.done?'done':''}">${escapeHTML(t.name)}<br><small>${escapeHTML(t.date||'No deadline')}</small></span>
+<div class="actions">
+<button onclick="editTask(${i})">Edit</button>
+<button onclick="removeTask(${i})">Delete</button>
+</div></div>`).join('')||'<p>No tasks yet. Add your first task!</p>';
 }
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 render();
 </script>
 </body>
