@@ -2,52 +2,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>UniFind | Campus Directory</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UniFind</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial;background:#f3f5ff;color:#20264a}
-header{background:#5546d9;color:white;padding:30px 8%;border-radius:0 0 25px 25px}
-header h1{margin:0;font-size:32px}
-main{max-width:1000px;margin:30px auto;padding:15px}
-input{width:100%;padding:16px;border:1px solid #ddd;border-radius:12px;font-size:16px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:25px}
-.card{background:white;padding:24px;border-radius:16px;box-shadow:0 5px 20px #0000000b}
-.card h3{color:#5546d9}
-.card p{color:#666}
-footer{text-align:center;padding:25px;color:#777}
+*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#f3f6fb;color:#26334c}
+header{background:#167e78;color:white;padding:25px}
+main{max-width:850px;margin:30px auto;padding:18px}
+.card{background:white;padding:22px;border-radius:15px;margin-bottom:18px}
+input,select,button{padding:12px;border:1px solid #ddd;border-radius:8px;margin:5px 0}
+input,select{width:100%}button{background:#167e78;color:white;border:0;cursor:pointer}
+.item{padding:15px;border-bottom:1px solid #eee}
+.item button{margin-right:5px}
 </style>
 </head>
 <body>
-<header>
-<h1>📍 UniFind</h1>
-<p>Your university campus directory</p>
-</header>
+<header><h1>🔎 UniFind</h1><p>Lost something? Find it here!</p></header>
 <main>
-<h2>Find Campus Facilities</h2>
-<input id="search" placeholder="Search buildings, offices, facilities..." oninput="filter()">
-<div class="grid" id="places"></div>
+<div class="card">
+<h2>Report an Item</h2>
+<input id="name" placeholder="Item name">
+<select id="status"><option>Lost</option><option>Found</option></select>
+<input id="place" placeholder="Location">
+<input id="contact" placeholder="Contact information">
+<button onclick="add()">Post Item</button>
+</div>
+<div class="card">
+<h2>Campus Reports</h2>
+<input id="search" placeholder="Search items..." oninput="render()">
+<div id="list"></div>
+</div>
 </main>
-<footer>UniFind © 2026 | Campus Made Easier</footer>
 <script>
-const data=[
-["🏫","Main Building","Administration and university offices"],
-["📚","Library","Books, research and study areas"],
-["💻","Computer Laboratory","Computer access and laboratory activities"],
-["🍔","Cafeteria","Food, snacks and refreshments"],
-["🏥","Clinic","First aid and health assistance"],
-["🏀","Gymnasium","Sports and university events"],
-["💳","Registrar","Enrollment and academic records"],
-["💰","Cashier","Tuition and payment transactions"],
-["🧑‍🏫","Faculty Room","Faculty and instructors"],
-["🚻","Comfort Rooms","Student restroom facilities"]
-];
-function filter(){
-let q=document.getElementById('search').value.toLowerCase();
-document.getElementById('places').innerHTML=data.filter(x=>x.join(' ').toLowerCase().includes(q)).map(x=>`<div class="card"><h3>${x[0]} ${x[1]}</h3><p>${x[2]}</p></div>`).join('');
+let data=JSON.parse(localStorage.unifind||'[]');
+function save(){localStorage.unifind=JSON.stringify(data);render()}
+function add(){
+let n=name.value.trim(),p=place.value.trim(),c=contact.value.trim();
+if(!n||!p||!c)return alert('Complete all fields');
+data.unshift({n,s:status.value,p,c});
+name.value=place.value=contact.value='';
+save();
 }
-filter();
+function edit(i){
+let n=prompt('Item name',data[i].n);
+if(n&&n.trim()){data[i].n=n.trim();save()}
+}
+function del(i){if(confirm('Delete report?')){data.splice(i,1);save()}}
+function render(){
+let q=search.value.toLowerCase();
+list.innerHTML=data.map((x,i)=>({...x,i})).filter(x=>(x.n+x.p+x.s).toLowerCase().includes(q)).map(x=>`
+<div class="item"><b>${esc(x.n)}</b> <b>(${esc(x.s)})</b>
+<p>📍 ${esc(x.p)} | ☎ ${esc(x.c)}</p>
+<button onclick="edit(${x.i})">Edit</button>
+<button onclick="del(${x.i})">Delete</button></div>`).join('')||'No reports found.';
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+render();
 </script>
 </body>
 </html>
