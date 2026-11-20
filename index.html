@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UniFind | Campus Directory</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#f3f5ff;color:#20264a}
+header{background:#5546d9;color:white;padding:30px 8%;border-radius:0 0 25px 25px}
+header h1{margin:0;font-size:32px}
+main{max-width:1000px;margin:30px auto;padding:15px}
+input{width:100%;padding:16px;border:1px solid #ddd;border-radius:12px;font-size:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:25px}
+.card{background:white;padding:24px;border-radius:16px;box-shadow:0 5px 20px #0000000b}
+.card h3{color:#5546d9}
+.card p{color:#666}
+footer{text-align:center;padding:25px;color:#777}
+</style>
+</head>
+<body>
+<header>
+<h1>📍 UniFind</h1>
+<p>Your university campus directory</p>
+</header>
+<main>
+<h2>Find Campus Facilities</h2>
+<input id="search" placeholder="Search buildings, offices, facilities..." oninput="filter()">
+<div class="grid" id="places"></div>
+</main>
+<footer>UniFind © 2026 | Campus Made Easier</footer>
+<script>
+const data=[
+["🏫","Main Building","Administration and university offices"],
+["📚","Library","Books, research and study areas"],
+["💻","Computer Laboratory","Computer access and laboratory activities"],
+["🍔","Cafeteria","Food, snacks and refreshments"],
+["🏥","Clinic","First aid and health assistance"],
+["🏀","Gymnasium","Sports and university events"],
+["💳","Registrar","Enrollment and academic records"],
+["💰","Cashier","Tuition and payment transactions"],
+["🧑‍🏫","Faculty Room","Faculty and instructors"],
+["🚻","Comfort Rooms","Student restroom facilities"]
+];
+function filter(){
+let q=document.getElementById('search').value.toLowerCase();
+document.getElementById('places').innerHTML=data.filter(x=>x.join(' ').toLowerCase().includes(q)).map(x=>`<div class="card"><h3>${x[0]} ${x[1]}</h3><p>${x[2]}</p></div>`).join('');
+}
+filter();
+</script>
+</body>
+</html>
