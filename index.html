@@ -1,69 +1,255 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>UniPlanner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+:root{
+  --bg:#eef2fa;--surface:#ffffff;--ink:#14213d;--muted:#5d6b8a;--line:#dbe2f0;
+  --accent:#3b5bdb;--accent-ink:#ffffff;--done:#1f9d74;--late:#d6336c;--soon:#e8890c;
+  --hi:#fff3a8;
+  color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1424;--surface:#171f35;--ink:#eaf0ff;--muted:#93a1c4;--line:#27314d;
+    --accent:#748ffc;--accent-ink:#0e1424;--done:#3ccf9e;--late:#ff6b9a;--soon:#ffb454;--hi:#4a4310;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1424;--surface:#171f35;--ink:#eaf0ff;--muted:#93a1c4;--line:#27314d;
+  --accent:#748ffc;--accent-ink:#0e1424;--done:#3ccf9e;--late:#ff6b9a;--soon:#ffb454;--hi:#4a4310;
+  color-scheme:dark;
+}
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial;background:#f3f5fb;color:#26334c}
-header{background:#4568dc;color:white;padding:25px}
-main{max-width:850px;margin:30px auto;padding:20px}
-.card{background:white;padding:22px;border-radius:16px;margin-bottom:18px;box-shadow:0 5px 20px #17233c10}
-input,button{padding:12px;border-radius:9px;border:1px solid #ddd}
-input{width:100%;margin:6px 0}
-button{background:#4568dc;color:white;border:0;cursor:pointer}
-.task{display:flex;align-items:center;gap:10px;padding:13px;border-bottom:1px solid #eee}
-.task span{flex:1}
-.done{text-decoration:line-through;color:#999}
-.actions{display:flex;gap:5px}
-.actions button{padding:8px}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 16px/1.5 Figtree,system-ui,sans-serif;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:32px 32px;background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0;background:var(--bg);opacity:.82;z-index:-1}
+.wrap{max-width:720px;margin:0 auto;padding:28px 18px 64px}
+header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px}
+h1{font:800 clamp(2rem,6vw,2.8rem)/1.05 "Bricolage Grotesque",sans-serif;margin:0;letter-spacing:-.02em}
+h1 span{background:linear-gradient(transparent 58%,var(--hi) 58%);padding:0 .12em}
+.sub{margin:6px 0 0;color:var(--muted)}
+.icon-btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);width:42px;height:42px;border-radius:12px;font-size:18px;cursor:pointer;flex:none}
+.icon-btn:hover{border-color:var(--accent)}
+.summary{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;background:var(--ink);color:var(--bg);border-radius:20px;padding:18px 20px;margin-bottom:18px}
+.ring{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--done) calc(var(--p,0)*1%),rgba(255,255,255,.18) 0)}
+.ring b{width:64px;height:64px;border-radius:50%;background:var(--ink);display:grid;place-items:center;font:800 1.15rem "Bricolage Grotesque",sans-serif;color:var(--bg)}
+.summary h2{margin:0 0 4px;font:600 1.15rem "Bricolage Grotesque",sans-serif}
+.summary p{margin:0;opacity:.8;font-size:.95rem}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px}
+.card h2{margin:0 0 12px;font:600 1.2rem "Bricolage Grotesque",sans-serif}
+.add{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:26px}
+.add .full{grid-column:1/-1}
+label{display:block;font-size:.82rem;color:var(--muted);margin:0 0 4px}
+input,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 12px;min-height:44px}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.primary{grid-column:1/-1;background:var(--accent);color:var(--accent-ink);border:0;border-radius:12px;min-height:46px;font:600 1rem Figtree,sans-serif;cursor:pointer}
+.primary:hover{filter:brightness(1.08)}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 12px}
+.bar h2{margin:0;font:600 1.3rem "Bricolage Grotesque",sans-serif}
+.tabs{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px}
+.tabs button{border:0;background:transparent;color:var(--muted);font:600 .88rem Figtree,sans-serif;padding:7px 12px;border-radius:10px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+li.task{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--c,var(--accent));border-radius:16px;padding:12px 12px 12px 14px}
+li.task.done{opacity:.6}
+li.task.done .t{text-decoration:line-through}
+.check{width:26px;height:26px;border-radius:8px;border:2px solid var(--muted);background:transparent;cursor:pointer;display:grid;place-items:center;color:var(--accent-ink);font-size:15px;padding:0}
+.done .check{background:var(--done);border-color:var(--done)}
+.t{font-weight:600;overflow-wrap:anywhere}
+.meta{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:3px;font-size:.84rem;color:var(--muted)}
+.chip{border-radius:999px;padding:1px 9px;background:var(--bg);border:1px solid var(--line)}
+.late{color:var(--late);font-weight:600}.soon{color:var(--soon);font-weight:600}
+.del{border:0;background:transparent;color:var(--muted);font-size:20px;cursor:pointer;width:40px;height:40px;border-radius:10px}
+.del:hover{color:var(--late);background:var(--bg)}
+.empty{text-align:center;color:var(--muted);padding:34px 12px;border:2px dashed var(--line);border-radius:16px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.stat b{display:block;font:800 1.9rem/1 "Bricolage Grotesque",sans-serif}
+.stat span{font-size:.82rem;color:var(--muted)}
+.stat.bad b{color:var(--late)}.stat.good b{color:var(--done)}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:22px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:14px;text-align:center;padding:8px 2px;font-size:.78rem;color:var(--muted)}
+.day strong{display:block;font:800 1.15rem "Bricolage Grotesque",sans-serif;color:var(--ink)}
+.day i{display:inline-block;min-width:20px;margin-top:4px;border-radius:999px;font-style:normal;font-weight:600;font-size:.74rem;background:var(--bg);color:var(--muted);padding:1px 6px}
+.day.today{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.day.today strong{color:var(--accent-ink)}
+.day.has i{background:var(--hi);color:var(--ink)}
+.tools{display:flex;gap:8px;margin-bottom:10px}
+.tools input{flex:1}
+.ghost{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:12px;padding:0 14px;min-height:44px;font:600 .88rem Figtree,sans-serif;cursor:pointer;white-space:nowrap}
+.ghost:hover{color:var(--late);border-color:var(--late)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chips button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 12px;font:600 .82rem Figtree,sans-serif;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);opacity:0;background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:14px;font-weight:600;pointer-events:none;transition:.25s;z-index:20;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:520px){.add{grid-template-columns:1fr}.summary{grid-template-columns:1fr;text-align:center;justify-items:center}.stats{grid-template-columns:repeat(2,1fr)}.tools{flex-direction:column}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<header><h1>📚 UniPlanner</h1><p>Your everyday university organizer</p></header>
-<main>
-<div class="card">
-<h2>Add a task</h2>
-<input id="task" placeholder="Task name">
-<input id="date" type="date">
-<button onclick="addTask()">+ Add Task</button>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Uni<span>Planner</span></h1>
+      <p class="sub" id="greet">Your everyday university organizer</p>
+    </div>
+    <button class="icon-btn" id="theme" aria-label="Switch theme">◐</button>
+  </header>
+
+  <section class="summary" aria-live="polite">
+    <div class="ring" id="ring"><b id="pct">0%</b></div>
+    <div><h2 id="sumTitle">Nothing planned yet</h2><p id="sumText">Add your first task to get started.</p></div>
+  </section>
+
+  <div class="stats">
+    <div class="stat"><b id="sToday">0</b><span>Due today</span></div>
+    <div class="stat"><b id="sWeek">0</b><span>Next 7 days</span></div>
+    <div class="stat bad"><b id="sLate">0</b><span>Overdue</span></div>
+    <div class="stat good"><b id="sDone">0</b><span>Completed</span></div>
+  </div>
+  <div class="week" id="week" aria-label="Next 7 days"></div>
+
+  <section class="card add" aria-labelledby="addH">
+    <h2 id="addH" class="full">Add a task</h2>
+    <div class="full"><label for="title">What do you need to do?</label><input id="title" placeholder="e.g. Finish Android project slides" maxlength="120"></div>
+    <div><label for="subject">Subject</label><input id="subject" placeholder="e.g. Mobile Dev"></div>
+    <div><label for="due">Due date</label><input id="due" type="date"></div>
+    <div class="full"><label for="prio">Priority</label>
+      <select id="prio"><option value="high">High</option><option value="med" selected>Medium</option><option value="low">Low</option></select></div>
+    <button class="primary" id="addBtn">Add task</button>
+  </section>
+
+  <div class="bar">
+    <h2>My tasks</h2>
+    <div class="tabs" role="group" aria-label="Filter tasks">
+      <button data-f="all" aria-pressed="true">All</button>
+      <button data-f="active" aria-pressed="false">To do</button>
+      <button data-f="done" aria-pressed="false">Done</button>
+    </div>
+  </div>
+  <div class="tools">
+    <input id="search" type="search" placeholder="Search tasks" aria-label="Search tasks">
+    <button class="ghost" id="clear">Clear all tasks</button>
+  </div>
+  <div class="chips" id="chips"></div>
+  <ul id="list"></ul>
 </div>
-<div class="card">
-<h2>My Tasks</h2>
-<div id="tasks"></div>
-</div>
-</main>
+
+<div class="toast" id="toast" role="status"></div>
 <script>
-let tasks=JSON.parse(localStorage.tasks||"[]");
-function save(){localStorage.tasks=JSON.stringify(tasks);render()}
-function addTask(){
-let name=document.getElementById('task').value.trim();
-if(!name)return alert('Enter a task!');
-tasks.push({name,date:document.getElementById('date').value,done:false});
-document.getElementById('task').value='';
-save();
-}
-function editTask(i){
-let n=prompt('Edit task:',tasks[i].name);
-if(n&&n.trim()){tasks[i].name=n.trim();save()}
-}
-function removeTask(i){
-if(confirm('Delete this task?')){tasks.splice(i,1);save()}
-}
-function render(){
-document.getElementById('tasks').innerHTML=tasks.map((t,i)=>`
-<div class="task">
-<input type="checkbox" style="width:auto" ${t.done?'checked':''} onchange="tasks[${i}].done=this.checked;save()">
-<span class="${t.done?'done':''}">${escapeHTML(t.name)}<br><small>${escapeHTML(t.date||'No deadline')}</small></span>
-<div class="actions">
-<button onclick="editTask(${i})">Edit</button>
-<button onclick="removeTask(${i})">Delete</button>
-</div></div>`).join('')||'<p>No tasks yet. Add your first task!</p>';
-}
-function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-render();
+(function(){
+  var KEY="uniplanner:tasks", TKEY="uniplanner:theme";
+  var tasks=[], filter="all", q="", subj="";
+  var colors={high:"var(--late)",med:"var(--accent)",low:"var(--done)"};
+  var names={high:"High",med:"Medium",low:"Low"};
+  function load(){try{var r=localStorage.getItem(KEY);tasks=r?JSON.parse(r):demo();if(!Array.isArray(tasks))tasks=[];}catch(e){tasks=[];}}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(tasks));}catch(e){}}
+  try{var th=localStorage.getItem(TKEY);if(th)document.documentElement.setAttribute("data-theme",th);}catch(e){}
+  document.getElementById("theme").onclick=function(){
+    var dark=getComputedStyle(document.documentElement).colorScheme==="dark";
+    var next=dark?"light":"dark";document.documentElement.setAttribute("data-theme",next);
+    try{localStorage.setItem(TKEY,next);}catch(e){}
+  };
+  function today(){var d=new Date();d.setHours(0,0,0,0);return d;}
+  function dueInfo(s){
+    if(!s)return null;var d=new Date(s+"T00:00:00"),diff=Math.round((d-today())/864e5);
+    var label=d.toLocaleDateString(undefined,{month:"short",day:"numeric"});
+    if(diff<0)return{t:"Overdue · "+label,c:"late"};
+    if(diff===0)return{t:"Due today",c:"soon"};
+    if(diff===1)return{t:"Due tomorrow",c:"soon"};
+    return{t:"Due "+label,c:""};
+  }
+  function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
+  function render(){
+    var list=document.getElementById("list");list.innerHTML="";
+    var shown=tasks.filter(function(t){return (filter==="all"||(filter==="done"?t.done:!t.done))&&(!subj||t.subject===subj)&&(!q||(t.title+" "+(t.subject||"")).toLowerCase().indexOf(q)>-1);});
+    shown.sort(function(a,b){return (a.done-b.done)||((a.due||"9999")>(b.due||"9999")?1:-1);});
+    if(!shown.length){
+      list.appendChild(el("li","empty",filter==="done"?"No finished tasks yet. Check one off when it’s done.":"No tasks here. Add one above to plan your week."));
+    }
+    shown.forEach(function(t){
+      var li=el("li","task"+(t.done?" done":""));li.style.setProperty("--c",colors[t.prio]||colors.med);
+      var chk=el("button","check",t.done?"✓":"");chk.setAttribute("aria-label",(t.done?"Mark as to do: ":"Mark as done: ")+t.title);
+      chk.onclick=function(){t.done=!t.done;save();render();if(t.done)toast("Nice work. “"+t.title+"” is done.");};
+      var mid=el("div");mid.appendChild(el("div","t",t.title));
+      var meta=el("div","meta");
+      if(t.subject)meta.appendChild(el("span","chip",t.subject));
+      meta.appendChild(el("span","",names[t.prio]+" priority"));
+      var di=dueInfo(t.due);if(di&&!t.done)meta.appendChild(el("span",di.c,di.t));
+      else if(di)meta.appendChild(el("span","",di.t));
+      mid.appendChild(meta);
+      var del=el("button","del","×");del.setAttribute("aria-label","Delete "+t.title);
+      del.onclick=function(){tasks=tasks.filter(function(x){return x.id!==t.id;});save();render();};
+      li.appendChild(chk);li.appendChild(mid);li.appendChild(del);list.appendChild(li);
+    });
+    var total=tasks.length,done=tasks.filter(function(t){return t.done;}).length,p=total?Math.round(done/total*100):0;
+    document.getElementById("ring").style.setProperty("--p",p);
+    document.getElementById("pct").textContent=p+"%";
+    var late=tasks.filter(function(t){return !t.done&&t.due&&new Date(t.due+"T00:00:00")<today();}).length;
+    document.getElementById("sumTitle").textContent=total?(done===total?"All caught up":(total-done)+" to go"):"Nothing planned yet";
+    document.getElementById("sumText").textContent=total?(done+" of "+total+" done"+(late?" · "+late+" overdue":"")):"Add your first task to get started.";
+  }
+  function add(){
+    var title=document.getElementById("title"),v=title.value.trim();
+    if(!v){title.focus();return;}
+    tasks.push({id:Date.now()+Math.random(),title:v,subject:document.getElementById("subject").value.trim(),
+      due:document.getElementById("due").value,prio:document.getElementById("prio").value,done:false});
+    save();title.value="";document.getElementById("subject").value="";document.getElementById("due").value="";
+    render();title.focus();
+  }
+  document.getElementById("addBtn").onclick=add;
+  document.getElementById("title").addEventListener("keydown",function(e){if(e.key==="Enter")add();});
+  document.querySelectorAll(".tabs button").forEach(function(b){
+    b.onclick=function(){filter=b.dataset.f;document.querySelectorAll(".tabs button").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false");});render();};
+  });
+  var baseRender=render;
+  render=function(){baseRender();extras();};
+  var tt;function toast(m){var e=document.getElementById("toast");e.textContent=m;e.classList.add("show");clearTimeout(tt);tt=setTimeout(function(){e.classList.remove("show");},2200);}
+  function pad(n){return (n<10?"0":"")+n;}
+  function ymd(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+  function offs(n){var d=today();d.setDate(d.getDate()+n);return ymd(d);}
+  function demo(){return [
+    {id:1,title:"Calculus problem set 6",subject:"Mathematics",due:offs(-1),prio:"high",done:false},
+    {id:2,title:"Lab report draft",subject:"Chemistry",due:offs(0),prio:"high",done:false},
+    {id:3,title:"Read chapter 5",subject:"Psychology",due:offs(1),prio:"low",done:false},
+    {id:4,title:"Group project meeting",subject:"Software Engineering",due:offs(2),prio:"med",done:false},
+    {id:5,title:"Study for midterm",subject:"Mathematics",due:offs(4),prio:"high",done:false},
+    {id:6,title:"Submit enrollment form",subject:"Admin",due:offs(-2),prio:"med",done:true}
+  ];}
+  function extras(){
+    var now=today(),a=0,w=0,o=0,d=0;
+    tasks.forEach(function(t){if(t.done){d++;return;}if(!t.due)return;var x=Math.round((new Date(t.due+"T00:00:00")-now)/864e5);if(x<0)o++;else if(x===0)a++;if(x>=0&&x<=6)w++;});
+    document.getElementById("sToday").textContent=a;document.getElementById("sWeek").textContent=w;
+    document.getElementById("sLate").textContent=o;document.getElementById("sDone").textContent=d;
+    var h=new Date().getHours();
+    document.getElementById("greet").textContent=(h<12?"Good morning":h<18?"Good afternoon":"Good evening")+(a?". You have "+a+" due today.":". Nothing due today.");
+    var wk=document.getElementById("week");wk.innerHTML="";
+    for(var i=0;i<7;i++){var dt=today();dt.setDate(dt.getDate()+i);var key=ymd(dt);
+      var c=tasks.filter(function(t){return !t.done&&t.due===key;}).length;
+      var cell=el("div","day"+(i===0?" today":"")+(c?" has":""));
+      cell.appendChild(document.createTextNode(dt.toLocaleDateString(undefined,{weekday:"short"})));
+      cell.appendChild(el("strong","",dt.getDate()));cell.appendChild(el("i","",c));wk.appendChild(cell);}
+    var ch=document.getElementById("chips");ch.innerHTML="";
+    var subs=[];tasks.forEach(function(t){if(t.subject&&subs.indexOf(t.subject)<0)subs.push(t.subject);});
+    if(subj&&subs.indexOf(subj)<0)subj="";
+    subs.forEach(function(s){var b=el("button","",s);b.setAttribute("aria-pressed",s===subj?"true":"false");
+      b.onclick=function(){subj=(subj===s?"":s);render();};ch.appendChild(b);});
+  }
+  document.getElementById("search").addEventListener("input",function(e){q=e.target.value.trim().toLowerCase();render();});
+  document.getElementById("clear").onclick=function(){if(!tasks.length)return;tasks=[];save();render();toast("All tasks cleared.");};
+  load();render();
+})();
 </script>
 </body>
 </html>
